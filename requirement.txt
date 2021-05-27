@@ -1,0 +1,10 @@
+wheel
+pytest
+setuptools
+databricks-cli
+azure-cli-core
+azure-storage-blob
+azure-identity
+pyspark
+python-decouple
+findspark
