@@ -1,0 +1,124 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "objectId":{
+            "type": "securestring"
+        },
+        "keyvaultName": {
+            "type": "string",
+            "defaultValue": "dbx-keyvault"
+        },
+        "location": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "containerName": {
+            "type": "string"
+        },
+        "workspaceName": {
+            "type": "string"
+        },
+        "workspaceLocation": {
+            "type": "string"
+        },
+        "tier": {
+            "defaultValue": "premium",
+            "type": "string"
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "standard",
+                "Premium",
+                "premium"
+            ],
+            "metadata": {
+                "description": "SKU for the vault"
+            }
+        },
+        "tenant": {
+            "type": "string"
+        },
+        "networkAcls": {
+            "type": "object",
+            "metadata": {
+                "description": "The network firewall defined for this vault."
+            }
+        }
+    },
+    "variables": {
+        "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]",
+        "managedResourceGroupName": "[concat('databricks-rg-', parameters('workspaceName'), '-', uniqueString(parameters('workspaceName'), resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-10-01",
+            "name": "[parameters('keyvaultName')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "properties": {
+                "enabledForDeployment": false,
+                "enabledForTemplateDeployment": true,
+                "enableSoftDelete": false,
+                "enabledForDiskEncryption": false,
+                "createMode": "recover",
+                "tenantId":"[subscription().tenantId]",
+                "accessPolicies":[
+                {
+                    "tenantId":"[subscription().tenantId]",
+                    "objectId":"[parameters('objectId')]",
+                    "permissions":{
+                        "keys":[],
+                        "secrets":["Get", "List", "Set"],
+                        "certificates":[]
+                    }
+                }
+                ],
+                "networkAcls": "[parameters('networkAcls')]"
+            }
+        },
+        {
+            "name": "[parameters('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-02-01",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Premium"
+            },
+            "location": "[parameters('location')]",
+            "kind": "StorageV2",
+            "properties":{
+                "accessTier": "Hot",
+                "allowBlobPublicAccess": "false"
+            },
+            "resources": [
+                    {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2019-06-01",
+                    "name": "[concat('default/', parameters('containerName'))]",
+                    "dependsOn": [
+                        "[parameters('storageAccountName')]"
+                    ]
+                    }
+                ] 
+        },
+        {
+            "name": "[parameters('workspaceName')]",
+            "type": "Microsoft.Databricks/workspaces",
+            "apiVersion": "2018-04-01",
+            "tags": {},
+            "location": "[parameters('workspaceLocation')]",
+            "sku": {
+                "name": "[parameters('tier')]"
+            },
+            "properties": {
+                "ManagedResourceGroupId": "[variables('managedResourceGroupId')]"
+            }            
+        }
+    ]    
+}

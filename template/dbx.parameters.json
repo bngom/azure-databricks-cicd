@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "objectId": {
+            "value": "object Id"
+        },
+        "storageAccountName":{
+            "value": "storage account"
+        },
+        "containerName":{
+            "value": "container"
+        },
+        "workspaceName": {
+            "value": "workspace"
+        },
+        "workspaceLocation": {
+            "value": "location"
+        },
+        "keyvaultName": {
+            "value": "keyvault"
+        },
+        "location": {
+            "value": "location"
+        },
+        "tier": {
+            "value": "premium"
+        },
+        "sku": {
+            "value": "Standard"
+        },
+        "tenant": {
+            "value": "tenantId"
+        },
+        "networkAcls": {
+            "value": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
+        }
+    }
+}
