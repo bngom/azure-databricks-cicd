@@ -1,3 +1,4 @@
+from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import col
 from pyspark.sql.types import StructType, StringType, IntegerType, StructField
@@ -27,6 +28,6 @@ class Friends:
     def save_as_parquet(self, df):
         df.write.parquet("friends.parquet")
             
-    def create_table(self, df):
+    def create_table(self, df: DataFrame, table_name: str ):
         parquetFile = self.spark.read.parquet("friends.parquet")
-        parquetFile.createOrReplaceTempView("parquetFile")
+        parquetFile.createOrReplaceTempView(table_name)
