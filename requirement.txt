@@ -1,6 +1,7 @@
 wheel
 pytest
 setuptools
+twine
 databricks-cli
 azure-cli-core
 azure-storage-blob
