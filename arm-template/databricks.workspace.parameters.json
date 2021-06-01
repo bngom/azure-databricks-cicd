@@ -2,30 +2,39 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "objectId": {
+            "value": "c504e3c2-2a0f-433e-9ce8-22c764361b44"
+        },
+        "storageAccountName":{
+            "value": "dbxbnsa"
+        },
         "workspaceName": {
-            "value": "databricks-ws"
+            "value": "dbx-dev-workspace"
         },
         "workspaceLocation": {
             "value": "francecentral"
         },
         "keyvaultName": {
-            "value": "databricks-kv"
+            "value": "dbx-bn-keyvault"
         },
-        "keyvaultLocation": {
+        "location": {
             "value": "francecentral"
         },
         "tier": {
-            "value": "standard"
+            "value": "premium"
         },
         "sku": {
             "value": "Standard"
         },
         "tenant": {
-            "reference": {
-              "keyVault": {
-                "id": "/subscriptions/9ba4c535-94b4-4eff-98cd-02d64b80c335/resourceGroups/datatabricks-rg/providers/Microsoft.KeyVault/vaults/databricks-kvbn"
-              },
-              "secretName": "tenantId"
+            "value": "94c6a57f-6d24-4fef-8a72-1b2643167426"
+        },
+        "networkAcls": {
+            "value": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
             }
         }
     }

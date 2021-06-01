@@ -19,8 +19,49 @@ In this article we will walk you trhought a development process ...
 
 ## Description of our ci/cd pipeline
 
-- Continuous Integration
-- Continuous Delivery
+- Continuous Integration: Build Pipeline
+
+1. Pipeline > New Pipeline
+
+```yml
+# Generate a build artefact for our databricks workspace
+trigger:
+- dev
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+- name: notebook-name
+  value: friends-notebook
+
+steps:
+- bash: |
+    mkdir -p "$(Build.ArtifactStagingDirectory)/arm-template"
+    cp databricks.workspace.parameters.json databricks.workspace.template.json "$(Build.ArtifactStagingDirectory)/arm-template/"
+  displayName: 'ARM template Build Artifacts'
+- bash: |
+    mkdir -p "$(Build.ArtifactStagingDirectory)/notebook"
+    cp notebook/$(notebook-name).py "$(Build.ArtifactStagingDirectory)/notebook/$(notebook-name)-$(Build.SourceVersion).py"
+    cp notebook-run.json.tmpl "$(Build.ArtifactStagingDirectory)/notebook/notebook-run.json.tmpl"
+  displayName: 'Notebook Build Artifacts'
+- task: PublishBuildArtifacts@1
+  displayName: Publish ARM Template Build Artifacts
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/arm-template'
+    artifactName: arm-template
+- task: PublishBuildArtifacts@1
+  displayName: Publish Notebook Build Artifacts
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/notebook'
+    artifactName: notebook
+
+```
+
+2. Create variables in Librairy
+
+- Pipeline > Librairy
+
 
 ## Define the Build pipeline
 
