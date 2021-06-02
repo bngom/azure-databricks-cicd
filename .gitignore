@@ -1,5 +1,14 @@
+# Exclude cache files and others
 .*
 __*cache*
-dbcicd
 
+# Exclude build output and content of the virtual environment
+dbcicd
+*dist*
+
+# Exclude test coverage files
+*cov*
+*junit*
+
+# exclude others but .gitignore
 !.gitignore

@@ -8,6 +8,9 @@
         "storageAccountName":{
             "value": "dbxbnsa"
         },
+        "containerName":{
+            "value": "dbxbncontainer"
+        },
         "workspaceName": {
             "value": "dbx-dev-workspace"
         },

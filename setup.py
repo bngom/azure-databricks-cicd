@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="friend-pkg-barthelemy",
+    name="friends",
     version="0.0.1",
     author="barthelemy",
     author_email="barthelemy@adaltas.com",

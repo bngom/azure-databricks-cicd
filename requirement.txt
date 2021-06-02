@@ -1,6 +1,5 @@
-wheel
 pytest
-setuptools
+pytest-cov
 twine
 databricks-cli
 azure-cli-core

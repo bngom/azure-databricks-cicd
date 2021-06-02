@@ -3,6 +3,10 @@ trigger:
 
 pool:
   vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
 
 variables:
 - name: notebook-name
@@ -10,21 +14,54 @@ variables:
 
 steps:
 - bash: |
-    mkdir -p "$(Build.ArtifactStagingDirectory)/arm-template"
-    cp databricks.workspace.parameters.json databricks.workspace.template.json "$(Build.ArtifactStagingDirectory)/arm-template/"
+    mkdir -p "$(Build.ArtifactStagingDirectory)/template"
+    cp template/databricks.workspace.parameters.json template/databricks.workspace.template.json "$(Build.ArtifactStagingDirectory)/template/"
   displayName: 'ARM template Build Artifacts'
 - bash: |
     mkdir -p "$(Build.ArtifactStagingDirectory)/notebook"
     cp notebook/$(notebook-name).py "$(Build.ArtifactStagingDirectory)/notebook/$(notebook-name)-$(Build.SourceVersion).py"
-    cp notebook-run.json.tmpl "$(Build.ArtifactStagingDirectory)/notebook/notebook-run.json.tmpl"
   displayName: 'Notebook Build Artifacts'
 - task: PublishBuildArtifacts@1
   displayName: Publish ARM Template Build Artifacts
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/arm-template'
-    artifactName: arm-template
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/template'
+    artifactName: template
 - task: PublishBuildArtifacts@1
   displayName: Publish Notebook Build Artifacts
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/notebook'
     artifactName: notebook
+- task: UsePythonVersion@0
+  displayName: 'Use Python 3.x'
+  inputs:
+    versionSpec: '3.x'
+- script: python -m pip install --upgrade pip setuptools wheel
+  displayName: 'Install tools'
+- script: pip install -r requirement.txt
+  displayName: 'Install requirements'
+- script: |
+    python -m pip install flake8
+    flake8 ./src/
+  displayName: 'Run lint tests'
+- script: |
+    pytest test --doctest-modules --junitxml=junit/test-results.xml --cov=./src --cov-report=xml --cov-report=html
+  displayName: 'Test with pytest'
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+   testResultsFiles: '**/test-*.xml'
+   testRunTitle: 'Publish test results for Python $(python.version)'
+- task: PublishCodeCoverageResults@1
+  inputs:
+   codeCoverageTool: Cobertura
+   summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+   reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+- script: |
+    mkdir -p "$(Build.ArtifactStagingDirectory)/wheel"
+    cp dist/friends-0.0.1-py3-none-any.whl "$(Build.ArtifactStagingDirectory)/wheel/friends-0.0.1-py3-none-any.whl"
+  displayName: 'Copy wheel artifact'
+- task: PublishBuildArtifacts@1
+  displayName: Publish Wheel Build Artifacts
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/wheel'
+    artifactName: wheel

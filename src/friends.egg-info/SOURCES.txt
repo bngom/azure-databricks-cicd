@@ -1,0 +1,9 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+src/friends.egg-info/PKG-INFO
+src/friends.egg-info/SOURCES.txt
+src/friends.egg-info/dependency_links.txt
+src/friends.egg-info/top_level.txt
+test/test_friends.py
