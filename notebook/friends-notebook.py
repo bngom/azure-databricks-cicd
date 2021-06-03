@@ -18,9 +18,9 @@ if MOUNTPOINT in [mnt.mountPoint for mnt in dbutils.fs.mounts()]:
   dbutils.fs.unmount(MOUNTPOINT)
 
 # Add the Storage Account, Container, and reference the secret to pass the SAS Token
-STORAGE_ACCOUNT = dbutils.secrets.get(scope="demo-cicd", key="sabndatabricks")
-CONTAINER = "sabnblob"
-SASTOKEN = dbutils.secrets.get(scope="demo-cicd", key="storagerw")
+STORAGE_ACCOUNT = dbutils.secrets.get(scope="demo", key="storageaccount")
+CONTAINER = "container"
+SASTOKEN = dbutils.secrets.get(scope="demo", key="storagerw")
 
 # Do not change these values
 SOURCE = "wasbs://{container}@{storage_acct}.blob.core.windows.net/".format(container=CONTAINER, storage_acct=STORAGE_ACCOUNT)
