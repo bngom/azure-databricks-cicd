@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "objectId": {
+            "value": "c504e3c2-2a0f-433e-9ce8-22c764361b44"
+        },
+        "storageAccountName":{
+            "value": "dbxbnsa"
+        },
+        "containerName":{
+            "value": "dbxbncontainer"
+        },
+        "workspaceName": {
+            "value": "dbx-dev-workspace"
+        },
+        "workspaceLocation": {
+            "value": "francecentral"
+        },
+        "keyvaultName": {
+            "value": "dbx-bn-keyvault"
+        },
+        "location": {
+            "value": "francecentral"
+        },
+        "tier": {
+            "value": "premium"
+        },
+        "sku": {
+            "value": "Standard"
+        },
+        "tenant": {
+            "value": "94c6a57f-6d24-4fef-8a72-1b2643167426"
+        },
+        "networkAcls": {
+            "value": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
+        }
+    }
+}
