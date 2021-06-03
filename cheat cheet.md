@@ -160,10 +160,9 @@ Create Variable Group:
 
 ![](./assets/new-variable-grp.png)
 
-- Create the following variable
+- Create the following variable, and save
 
 ![](./assets/variable-grp.png)
-
 
 
 ### Create a Release Pipeline
@@ -172,65 +171,143 @@ Create Variable Group:
 
 Create a release to deploy resources (Databricks workspace, KeyVault, Storage Account and Container for blob storage) on Microsoft Azure.
 
-- Pipeline > Release: +New Piepline
-- Update the Stage name to *Development*
-- Add artifacts
-- In variable: Link Variable Group for release and and stage
-- In Task: Add ARM Resource Deployment and configure it accordingly giving the template and parameter files. And overwriting the variables:   
-  - Deployment scope: Resource Group
-  - Template: Click on `more` and select dbx.template.json in the template artifacts
-  - Template parameters: select dbx.parameters.json in the template artifacts
+- Pipelines > Release: +New Piepline
+- On the right blade, For select a template click on *Empty Job*
 
-```
+![](./assets/empty-job.png)
+
+- Update the Stage name to *Development*
+
+![](./assets/stage-dev.png)
+
+- Click on *Add artifacts* and Select the source build pipeline `demo-cicd`. The click on *Add*
+
+![](./assets/add-artifacts.png)
+
+- Click on variable and link our Variable Group to stage Development
+
+![](./assets/link-variable-grp.png)
+
+![](./assets/link-variable-grp-2.png)
+
+- Now, click on  Task: 
+  - Check the Agent job set up: make sure the Agent Specification is set to `ubuntu-20.04`
+  - Clic on + sign near Agent job 
+
+![](./assets/plus-task.png)
+
+  - Add ARM Resource Deployment and configure it accordingly giving the template and parameter files. And overwriting the variables:   
+    - Deployment scope: Resource Group
+    - Select your Azure Resource manager connection and click on Authorize
+    - Select your subscription
+    - Action: Create or update resource group
+    - Resource group: select the resource group created previously or use the variable $(rg_name)
+    - Location: idem, or $(location)
+    - Template: Click on `more` and select `dbx.template.json` in the template artifacts
+    - Template parameters: select `dbx.parameters.json`in the template artifacts
+    - Override template parameters:
+
+    Or you can copy past the below lines of code
+
+    ![](./assets/arm-template-deployment.png)
+
+    ```sh
+    -objectId $(object_id) -keyvaultName $(keyvault) -location $(location) -storageAccountName $(sa_name) -containerName $(container) -workspaceName $(workspace) -workspaceLocation $(location) -tier "premium" -sku "Standard" -tenant $(tenant_id) -networkAcls {"defaultAction":"Allow","bypass":"AzureServices","virtualNetworkRules":[],"ipRules":[]}
+    ```
+    - Deployment mode: Incremental
+    - Now, save your configuration
+
+    ![](./assets/template-parameters.png)
+
+Now, create a first release
+
+- Click on the button: Create release
+
+![](./assets/create-release-btn.png)
+
+- Stages for a trigger change from automated to manual: select Development
+
+![](./assets/new-release.png)
+
+- Click on create
+- Go to Pipelines > Release
+- Select our release pipeline 
+![](./assets/select-release.png)
+
+- Click on the newly created release
+![](./assets/deploy-release.png)
+
+![](./assets/deploy-release-1.png)
+
+- Click on deploy
+
+![](./assets/deploy-release-2.png)
+
+Our pipeline executed successfully
+
+![](./assets/release-pipeline-success.png)
+
+And our resources are deployed in Azure. Go to Azure Portal and check
+
+![](./assets/check-az-resources.png)
+
+
+**Phase 2**
+
+We will complete the deployment of our release pipeline but let us do some configuration.
+
+Install Databricks cli [here](https://docs.databricks.com/dev-tools/cli/index.html)
+
+Launch your Databricks workspace and generate an Access Token
+
+Generate a databricks token [here](https://docs.databricks.com/dev-tools/api/latest/authentication.html#generate-a-personal-access-token)
+
+Copy the new token and save it into your keyvault. At the same tiime we will save the URI of our Databricks service, you can find this one in Azure portal 
+
+
 
 ```sh
-# Override template parameters
--objectId "$(object_id)" -keyvaultName "$(keyvault)" -location "$(location)" -storageAccountName "$(sa_name)" -workspaceName "$(dbx_name)" -workspaceLocation "$(location)" -tier "premium" -sku "Standard" -tenant "$(tenant_id)" -networkAcls {"defaultAction":"Allow","bypass":"AzureServices","virtualNetworkRules":[],"ipRules":[]}
+export dbxtoken="dapiee3855ad0418b23ec57b2833f8536472"
+export dbxuri="https://adb-620934829532625.5.azuredatabricks.net" 
+# uri="https://adb-<workspace-id>.<random-number>.azuredatabricks.net"
+az keyvault secret set --vault-name $keyvault_name --name "dbxtoken" --value $dbxtoken
+az keyvault secret set --vault-name $keyvault_name --name "dbxuri" --value $dbxuri
 ```
 
 Generate a shared access signature token for the storage account. This will secure the communication between Azure Dtabricks and the object storage
 
 ```sh
+a_name="dbxbnsa"
+keyvault_name="dbx-bn-keyvault"
 end=`date -u -d "10080 minutes" '+%Y-%m-%dT%H:%MZ'`
 az storage account generate-sas \
   --permissions lruwap \
-  --account-name dbxbnsa \
+  --account-name $sa_name \
   --services b \
   --resource-types sco \
   --expiry $end \
   -o tsv
 ```
 
+Your SAS Token is generated:
+
+`se=2021-06-10T14%3A06Z&sp=rwlaup&sv=2018-03-28&ss=b&srt=sco&sig=OPSbZ/sJDBG3NY1MV1NAJOKR9MXIh3gKaIrTCNVXygY%3D`
+
+```sh
+export sastoken="se=2021-06-10T14%3A06Z&sp=rwlaup&sv=2018-03-28&ss=b&srt=sco&sig=OPSbZ/sJDBG3NY1MV1NAJOKR9MXIh3gKaIrTCNVXygY%3D"
+```
+
 Copy the SAS token generated and copy it into the key vault
 
 ```sh
-az keyvault secret set --vault-name $keyvault_name --name "storagerw" --value "YOUR-SASTOKEN"
+az keyvault secret set --vault-name $keyvault_name --name "storagerw" --value $sastoken
 ```
-
-Let us few secrets in our the key vault
 
 ```sh
 #Let us gather some variable
-tenantId=$(az account list | jq '.[].tenantId')
-userId=$(az ad user list --filter "startswith(displayName, 'Barthelemy Diomaye NGOM')" | jq '.[].objectId')
-subscriptionId=$(az account subscription list | jq '.[].subscriptionId')
-```
-
-```sh
-# Example: az keyvault secret set --vault-name $keyvault_name --name "ExampleSecret" --value "dummyValues"
-# Set my tenant id as a secret
-az keyvault secret set --vault-name $keyvault_name --name "tenantId" --value $tenantId
-
-# Set my User id (Object ID) as a secret
-az keyvault secret set --vault-name $keyvault_name --name "userId" --value $userId
-
-# Set my Subscription id  as a secret 
-az keyvault secret set --vault-name $keyvault_name --name "subscriptionId" --value $subscriptionId
-
-az keyvault secret set --vault-name $keyvault_name --name "storageAccountName" --value "$storage_account"
-
-az keyvault secret set --vault-name $keyvault_name --name "storageAccountContainer" --value "$container"
-
+# tenantId=$(az account list | jq '.[].tenantId')
+# userId=$(az ad user list --filter "startswith(displayName, 'Barthelemy Diomaye NGOM')" | jq '.[].objectId')
+# subscriptionId=$(az account subscription list | jq '.[].subscriptionId')
 ```
 
 List your secrets
@@ -239,71 +316,71 @@ List your secrets
 az keyvault secret list --vault-name $keyvault_name --output table
 ```
 
+**Configure Databricks CLI**
 
 
-Create a cluster in databricks
+Configure your cli to interact with databricks. You will need to enter the uri and the token generated
 
 ```sh
+databricks configure --token
+```
+
+**Create a cluster in databricks**
+
+```sh
+rm -f create-cluster.json
 cat <<EOF >> create-cluster.json
 {
-    "num_workers": null,
-    "autoscale": {
-        "min_workers": 1,
-        "max_workers": 2
-    },
-    "cluster_name": "dbx-cluster",
-    "spark_version": "8.2.x-scala2.12",
-    "spark_conf": {},
-    "azure_attributes": {
-        "first_on_demand": 1,
-        "availability": "ON_DEMAND_AZURE",
-        "spot_bid_max_price": -1
-    },
-    "node_type_id": "Standard_DS3_v2",
-    "ssh_public_keys": [],
-    "custom_tags": {},
-    "spark_env_vars": {
-        "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
-    },
-    "autotermination_minutes": 120,
-    "cluster_source": "UI",
-    "init_scripts": []
+  "num_workers": null,
+  "autoscale": {
+      "min_workers": 2,
+      "max_workers": 8
+  },
+  "cluster_name": "dbx-cluster",
+  "spark_version": "8.2.x-scala2.12",
+  "spark_conf": {},
+  "azure_attributes": {
+      "first_on_demand": 1,
+      "availability": "ON_DEMAND_AZURE",
+      "spot_bid_max_price": -1
+  },
+  "node_type_id": "Standard_DS3_v2",
+  "ssh_public_keys": [],
+  "custom_tags": {},
+  "spark_env_vars": {
+      "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+  },
+  "autotermination_minutes": 30,
+  "cluster_source": "UI",
+  "init_scripts": []
 }
 EOF
 
 databricks clusters create --json-file create-cluster.json
+# cluster_id=0603-150336-yuck781
+# az keyvault secret set --vault-name $keyvault_name --name "cluster_id" --value $cluster_id
+# Get my key vault id to be used as reference in my arm template parameter's file
+#`az keyvault list | jq '.[].id'
+
 ```
 
+**Create an Azure Key Vault-backed secret scope in Databricks**
 
-Get my key vault id to be used as reference in my arm template parameter's file
-
-`az keyvault list | jq '.[].id'`
-
-
-## Databricks CLI
-
-Install Databricks cli [here](https://docs.databricks.com/dev-tools/cli/index.html)
-
-Generate a databricks token [here](https://docs.databricks.com/dev-tools/api/latest/authentication.html#generate-a-personal-access-token)
-
-Configure your cli to interact with databricks
-
-```sh
-databricks configure --token <GENERATED TOKEN>
-```
-
-Get the resource ID and the DNS name from your key vault properties
+Get the resource ID and the DNS name from your key vault properties and create a secret scope in Azure Databricks.
 
 ```sh
 vaultUri=$(az keyvault show --name $keyvault_name | jq '.properties.vaultUri')
 vaultId=$(az keyvault show --name $keyvault_name | jq '.id')
+databricks secrets create-scope --scope demo --scope-backend-type AZURE_KEYVAULT --resource-id $vaultId --dns-name $vaultUri
 ```
+> If the above command raise an erro, you can still create the scope from the databricks workspace using the following url https://<databricks-instance>#secrets/createScope.
 
-## Create an Azure Key Vault-backed secret scope
+![](./assets/create-scope.png)
 
-```sh
-databricks secrets create-scope --scope demo-cicd --scope-backend-type AZURE_KEYVAULT --resource-id $vaultId --dns-name $vaultUri
-```
+**Release Pipeline: continue**
+
+Let's go back to our release pipeline and finish the configuration.
+
 
 ## Resources
 
