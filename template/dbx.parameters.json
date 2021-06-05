@@ -3,34 +3,35 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "objectId": {
-            "value": "object Id"
+            "value": "<objectId>"
         },
         "storageAccountName":{
-            "value": "storage account"
+            "value": "<storageAccountName>"
         },
         "containerName":{
-            "value": "container"
+            "value": "<containerName>"
         },
         "workspaceName": {
-            "value": "workspace"
+            "value": "<workspaceName>"
         },
         "workspaceLocation": {
-            "value": "location"
+            "value": "francecentral"
         },
         "keyvaultName": {
-            "value": "keyvault"
+            "value": "<keyvaultName>"
         },
         "location": {
-            "value": "location"
+            "value": "francecentral"
+        },
+        
+        "tenant": {
+            "value": "<tenantId>"
         },
         "tier": {
             "value": "premium"
         },
         "sku": {
             "value": "Standard"
-        },
-        "tenant": {
-            "value": "tenantId"
         },
         "networkAcls": {
             "value": {
