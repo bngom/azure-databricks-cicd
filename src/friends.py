@@ -4,6 +4,10 @@ from pyspark.sql.types import StructType, StringType, IntegerType, StructField
 
 
 class Friends:
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
     def __init__(self, spark: SparkSession, file_path: str):
         self.spark = spark
         self.file_path = file_path
