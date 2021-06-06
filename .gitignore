@@ -2,6 +2,8 @@
 .*
 __*cache*
 
+*.egg.*
+
 # Exclude build output and content of the virtual environment
 dbcicd
 *dist*

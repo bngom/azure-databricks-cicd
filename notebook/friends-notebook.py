@@ -1,16 +1,23 @@
-# COMMAND ----------
-%md
-# Demo CICD with Databricks and Azure DevOps
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Demo CICD with Databricks and Azure DevOps
 
 # COMMAND ----------
+
+# MAGIC %pip list
+
+# COMMAND ----------
+
 # Import our library
-import friends as f
+from friends import friends as f
 
 # COMMAND ----------
-%md
-## Mount the Azure Storage Account Container
+
+# MAGIC %md
+# MAGIC ## Mount the Azure Storage Account Container
 
 # COMMAND ----------
+
 # Mount Azure Blob
 # Unmount directory if previously mounted.
 MOUNTPOINT = "/mnt/adaltas"
@@ -19,7 +26,7 @@ if MOUNTPOINT in [mnt.mountPoint for mnt in dbutils.fs.mounts()]:
 
 # Add the Storage Account, Container, and reference the secret to pass the SAS Token
 STORAGE_ACCOUNT = dbutils.secrets.get(scope="demo", key="storageaccount")
-CONTAINER = "container"
+CONTAINER = dbutils.secrets.get(scope="demo", key="container")
 SASTOKEN = dbutils.secrets.get(scope="demo", key="storagerw")
 
 # Do not change these values
@@ -37,12 +44,16 @@ except Exception as e:
   else:
     raise e
 
-display(dbutils.fs.ls(MOUNTPOINT))
+# display(dbutils.fs.ls())
 
 
 # COMMAND ----------
-f_obj = f.Friends(spark, "/mnt/adaltas")
 
+display(dbutils.fs.ls("/mnt/adaltas/"))
+
+# COMMAND ----------
+
+f_obj = f.Friends(spark=spark, file_path="/mnt/adaltas")
 
 # COMMAND ----------
 
@@ -54,8 +65,19 @@ df.show()
 
 # COMMAND ----------
 
-f_obj.create_table(df, "friends")
+file_name="/tmp/friends.parquet"
+dbutils.fs.rm(file_name, True)
+f_obj.save_as_parquet(df=df, file_name=file_name)
 
 # COMMAND ----------
-%sql
-SELECT * FROM friends LIMIT 10
+
+dbutils.fs.ls(file_name)
+
+# COMMAND ----------
+
+f_obj.create_table(df=df, table_name="friends", file_name=file_name)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM friends LIMIT 10

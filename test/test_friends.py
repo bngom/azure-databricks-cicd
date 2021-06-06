@@ -1,7 +1,7 @@
 import unittest
 # import pyspark
 import logging
-import friends as f
+from friends import friends as f
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StringType, IntegerType, StructField
 

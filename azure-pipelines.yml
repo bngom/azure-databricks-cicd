@@ -5,12 +5,8 @@ pool:
   vmImage: ubuntu-latest
 strategy:
   matrix:
-    Python36:
-      python.version: '3.6'
     Python37:
       python.version: '3.7'
-    Python38:
-      python.version: '3.8'
 
 variables:
 - name: notebook-name
@@ -27,11 +23,11 @@ steps:
   displayName: 'Install dependencies'
 - script: |
     python -m pip install flake8
-    flake8 ./src/
+    flake8 ./friends/
   displayName: 'Run lint tests'
 - script: |
     python -m pip install pytest pytest-azurepipeline
-    pytest test --doctest-modules --junitxml=junit/test-results.xml --cov=./src --cov-report=xml --cov-report=html
+    pytest test --doctest-modules --junitxml=junit/test-results.xml --cov=./friends --cov-report=xml --cov-report=html
   displayName: 'Test with pytest'
 - task: PublishTestResults@2
   condition: succeededOrFailed()
@@ -63,10 +59,10 @@ steps:
     artifactName: notebook
 - script: |
     mkdir -p "$(Build.ArtifactStagingDirectory)/wheel"
-    python3 -m pip install --upgrade build
-    python3 -m build
-    cp dist/friends-0.0.1-py3-none-any.whl "$(Build.ArtifactStagingDirectory)/wheel/friends-0.0.1-py3-none-any.whl"
-  displayName: 'Copy wheel artifact'
+    pip install wheel setuptools
+    python setup.py bdist_wheel --universal
+    cp dist/friends-0.0.1-py2.py3-none-any.whl "$(Build.ArtifactStagingDirectory)/wheel/friends-0.0.1-py2.py3-none-any.whl"
+  displayName: 'Publish build wheel artifact'
 - task: PublishBuildArtifacts@1
   displayName: Publish Wheel Build Artifacts
   inputs:

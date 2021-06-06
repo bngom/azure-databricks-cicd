@@ -33,21 +33,23 @@ steps:
 
 - bash: |
    databricks workspace mkdirs /dev
-   databricks workspace import --language PYTHON --format SOURCE --overwrite $(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/friends-notebook-f8d581afa3dca8fe320bcf32b191fff86ab5ac12.py /dev/$(notebook_name)-$(Build.SourceVersion).py
-   #$(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/$(notebook_name)-$(Build.SourceVersion).py
+   databricks workspace import --language PYTHON --format SOURCE --overwrite $(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/$(notebook-name)-f8d581afa3dca8fe320bcf32b191fff86ab5ac12.py /dev/$(notebook-name)-$(Build.SourceVersion).py
+   #$(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/$(notebook-name)-$(Build.SourceVersion).py
   displayName: 'Databricks import notebook into workspace'
 
 - bash: |
    # create a new directory
    databricks fs mkdirs dbfs:/dbx-library
    # Import the module
-   databricks fs cp $(System.DefaultWorkingDirectory)/_dbx-cicd.git/wheel/friends-0.0.1-py3-none-any.whl dbfs:/dbx-library/  --overwrite
+   databricks fs cp $(System.DefaultWorkingDirectory)/_dbx-cicd.git/wheel/friends-0.0.1-py2.py3-none-any.whl dbfs:/dbx-library/  --overwrite
   displayName: 'Import Library into Databricks'
 
 - bash: |
-   echo "Cluster id: $(cluster_id)"
    # Install library
    cluster_id=$(databricks clusters list --output JSON | jq '[ .clusters[] | { name: .cluster_name, id: .cluster_id, state: .state } ]' | jq '.[] | select(.name=="dbx-cluster")' | jq -r '.id')
-   databricks libraries install --cluster-id $(cluster_id) --whl dbfs:/dbx-library/friends-0.0.1-py3-none-any.whl
+
+   echo "Cluster id: $cluster_id"
+
+   databricks libraries install --cluster-id $cluster_id --whl dbfs:/dbx-library/friends-0.0.1-py2.py3-none-any.whl
   displayName: 'Install Library and attach it to the cluster'
 
