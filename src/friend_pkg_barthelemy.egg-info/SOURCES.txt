@@ -1,9 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-setup.py
-src/friend_pkg_barthelemy.egg-info/PKG-INFO
-src/friend_pkg_barthelemy.egg-info/SOURCES.txt
-src/friend_pkg_barthelemy.egg-info/dependency_links.txt
-src/friend_pkg_barthelemy.egg-info/top_level.txt
-test/test_friends.py
