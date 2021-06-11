@@ -1,14 +1,3 @@
-#Your build pipeline references an undefined variable named ‘rg_name’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘location’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘object_id’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘keyvault’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘location’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘sa_name’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘container’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘workspace’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘location’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#Your build pipeline references an undefined variable named ‘tenant_id’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-
 steps:
 - task: AzureResourceManagerTemplateDeployment@3
   displayName: 'ARM Template deployment: Resource Group scope'
@@ -32,9 +21,8 @@ steps:
   displayName: 'Databricks configure'
 
 - bash: |
-   databricks workspace mkdirs /dev
-   databricks workspace import --language PYTHON --format SOURCE --overwrite $(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/$(notebook-name)-f8d581afa3dca8fe320bcf32b191fff86ab5ac12.py /dev/$(notebook-name)-$(Build.SourceVersion).py
-   #$(System.DefaultWorkingDirectory)/_dbx-cicd.git/notebook/$(notebook-name)-$(Build.SourceVersion).py
+   databricks workspace mkdirs /$(folder)
+   databricks workspace import --language PYTHON --format SOURCE --overwrite _demo-cicd/notebook/$(notebook-name)-$(Build.SourceVersion).py /$(folder)/$(notebook-name)-$(Build.SourceVersion).py
   displayName: 'Databricks import notebook into workspace'
 
 - bash: |
